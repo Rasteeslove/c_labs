@@ -37,5 +37,5 @@ clean_exes:
 
 clean_all:	clean_txts	clean_exes
 
-lint_all:
-	splint main4_1.c main4_2.c text_io.c first_tasks_of_the_lab.c second_task_of_the_lab.c doubly_linked_list.c math_for_m_numbers.c
+#lint_all:
+#	splint main4_1.c main4_2.c text_io.c first_tasks_of_the_lab.c second_task_of_the_lab.c doubly_linked_list.c math_for_m_numbers.c
