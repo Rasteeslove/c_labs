@@ -3,7 +3,7 @@
 struct m_number * find_head(struct m_number * number);
 struct m_number * find_tail(struct m_number * number);
 
-char is_single_digit(struct m_number * number)
+int is_single_digit(struct m_number * number)
 {
     if (number == NULL)
     {
@@ -35,6 +35,12 @@ struct m_number * add_digit_to_number(struct m_number * list_node, char new_digi
     struct m_number * new_node, * tmp;
     
     new_node = (struct m_number *)malloc(sizeof(struct m_number));
+
+    if (new_node == NULL)
+    {
+        printf("\nMemory error\n");
+        exit(EXIT_FAILURE);
+    }
 
     tmp = list_node->next; 
     list_node->next = new_node; 
@@ -153,11 +159,11 @@ struct m_number * find_head(struct m_number * number)
 
     while (number->pre != NULL)
         number = number->pre;
-
+ 
     return number;
 }
 
-int delete_number(struct m_number * number) // returns 1 if success, 0 otherwise
+int delete_number(struct m_number * number) /* returns 1 on success, 0 otherwise */
 {
     if (number == NULL)
     {

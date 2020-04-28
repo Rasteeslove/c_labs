@@ -1,6 +1,6 @@
 #include "clab5.h"
 
-char equals_one(struct m_number * number)
+int equals_one(struct m_number * number)
 {
     if (number == NULL)
         return 0;
@@ -11,7 +11,9 @@ char equals_one(struct m_number * number)
 
 void task_one()
 {
-    // the task is to determine if two numbers are coprime
+    /* the task is to determine if two numbers are coprime */
+
+    printf("Enter your two numbers (the first, the ENTER, then the second):\n");
 
     struct m_number * first, * second, * gcd;
 
@@ -25,4 +27,7 @@ void task_one()
         printf("They're coprime.");
     else   
         printf("They're not coprime.");
+
+    delete_number(first);
+    delete_number(second);
 }

@@ -4,8 +4,8 @@
 #define BACKSPACE 8
 
 #include "clab5.h"
- 
-char is_number(char symbol)
+  
+int is_number(char symbol)
 {
     if (symbol >= '0' && symbol <= '9')
         return 1;

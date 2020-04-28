@@ -1,7 +1,7 @@
 #include "clab5.h"
 
-// subtraction and 
-// gcd
+/* subtraction and 
+   gcd */
 
 int length_of(struct m_number * number)
 {
@@ -25,7 +25,7 @@ struct m_number * difference_for_two_m_numbers(struct m_number * first_root, str
     struct m_number * difference, 
                     ** big_ptr = get_the_biggest_number(&first_root, &second_root); 
 
-    // return zero if equals
+    /* return zero if equals */
     if (big_ptr == NULL)
     {
         difference = add_digit_to_number(NULL, 0);
@@ -34,12 +34,12 @@ struct m_number * difference_for_two_m_numbers(struct m_number * first_root, str
 
     struct m_number * small = ((* big_ptr) == first_root ? second_root : first_root);
         
-    // copying big into difference
+    /* copying big into difference */
     difference = copy_m_number((* big_ptr));
 
     #pragma region subtraction
 
-    char tmp_subtrahend = 0;    // extra subtrahend moving the order up
+    char tmp_subtrahend = 0;    /* extra subtrahend moving the order up */
 
     while (small != NULL)
     {
@@ -63,7 +63,7 @@ struct m_number * difference_for_two_m_numbers(struct m_number * first_root, str
 
     #pragma endregion
 
-    // standardizing
+    /* standardizing */
     difference = simplify(difference);
 
     return difference;
@@ -71,7 +71,7 @@ struct m_number * difference_for_two_m_numbers(struct m_number * first_root, str
 
 struct m_number ** get_the_biggest_number(struct m_number ** first, struct m_number ** second)
 {   
-    struct m_number * first_num = find_head((* first)), * second_num = find_head((* second));
+    struct m_number * first_num = find_tail((* first)), * second_num = find_tail((* second));
     
     int i = length_of(first_num), j = length_of(second_num);
 
