@@ -13,7 +13,7 @@ int get_int()
     int num = 0;
 
     char * input = get_string(stdin);
-    if (length_of(input) <= 10)
+    if (length_of(input) >= 10)
         input[9] = '\0';
 
     int i = 0;

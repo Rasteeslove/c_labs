@@ -8,6 +8,3 @@ run:
 
 clean:
 	del clab5.exe
-
-#lint:
-#	splint main.c doubly_linked_list.c m_number_io.c math_for_m_numbers.c tasks.c

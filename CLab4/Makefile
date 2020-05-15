@@ -1,15 +1,15 @@
 CC = gcc
 CFLAGS = -g -Wall -Wno-unknown-pragmas -std=c89
 
-default:	build_first
+default:	build_first run_first clean_all build_second run_second clean_all
 
 build_first:	lab4_1.o text_io.o
 				$(CC) main4_1.o first_tasks_of_the_lab.o text_io.o -o clab4_1.exe
-				del main4_1.o first_tasks_of_the_lab.o text_io.o
+				del main4_1.o first_tasks_of_the_lab.o
 
-build_second:	lab4_2.o text_io.o m_number.o
+build_second:	lab4_2.o m_number.o
 				$(CC) main4_2.o second_task_of_the_lab.o text_io.o doubly_linked_list.o math_for_m_numbers.o -o clab4_2.exe
-				del main4_2.o second_task_of_the_lab.o text_io.o doubly_linked_list.o math_for_m_numbers.o
+				del *.o
 
 text_io.o:	text_io.c
 			$(CC) $(CFLAGS) -c text_io.c
@@ -36,6 +36,3 @@ clean_exes:
 	del *.exe
 
 clean_all:	clean_txts	clean_exes
-
-#lint_all:
-#	splint main4_1.c main4_2.c text_io.c first_tasks_of_the_lab.c second_task_of_the_lab.c doubly_linked_list.c math_for_m_numbers.c

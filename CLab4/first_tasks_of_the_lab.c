@@ -63,7 +63,7 @@ void out_same_lets(char * name)
     }
 
     int cur_letter, cur_len = 0, cur_capacity = DEF_LINE_LEN;
-    char * cur_word;
+    char * cur_word = NULL;
     while ((cur_letter = fgetc(text)) != EOF)
     {
         

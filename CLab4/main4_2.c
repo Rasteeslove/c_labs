@@ -4,7 +4,7 @@ int main()
 {
     /* нужно, чтобы в папке лабы лежал текст */
 
-    printf("Enter your text's name: ");
+    printf("Create text file with text in the lab\'s folder then enter its name: ");
 
     char text_name[DEF_LINE_LEN];
     fgets(text_name, DEF_LINE_LEN, stdin);
