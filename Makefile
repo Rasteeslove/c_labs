@@ -25,5 +25,8 @@ run_sixth:
 	make
 	cd ..
 
-#run_seventh:
+run_seventh:
+	cd CLab7
+	make
+	cd..
 
