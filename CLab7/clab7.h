@@ -10,18 +10,6 @@
 #define id int
 #define money int
 
-typedef enum group_type
-{
-
-    Band,
-    Ensemble,
-    Orchestra,
-    Collective,
-    Music_collective,
-    Writers_collective,
-
-
-} group_type;
 
 typedef enum release_type
 {
@@ -180,8 +168,6 @@ article * new_article();
 
 void delete_user(user * one);
 void delete_group(group * one);
-void delete_text(text * one);
-void delete_song_info(song one);
 void delete_release(release * one);
 void delete_article(article * one);
 

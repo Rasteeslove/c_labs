@@ -1,6 +1,8 @@
 #include "clab7.h"
 
 #define SONGS_ON_THE_RECORD_UPPER_LIMIT 40
+
+/* these are unnessesary if text input is like in the 4th lab (with a "condition"-txt-file) */
 #define MAX_NUM_OF_LYR_LINES 120
 #define MAX_NUM_OF_ARTICLE_LINES 360
 
@@ -40,6 +42,38 @@ void buy_an_article(id you);
 date * set_date();
 song set_song();
 void session(id you);
+
+int is_a_leap_year(int year)
+{
+    if (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0))
+        return 0;
+
+    return 1;
+}
+
+user * get_user_by_id(id some_id)
+{
+    box * whatever = get_item_by_id(some_id);
+    user * output;
+
+    if (whatever->g != NULL)
+        output = whatever->g->image;
+    else
+        output = whatever->u;   
+
+    free(whatever);
+
+    return output;
+}
+
+group * get_group_by_id(id some_id)
+{
+    box * whatever = get_item_by_id(some_id);
+    group * output = whatever->g;
+    free(whatever);
+
+    return output;
+}
 
 int is_name_unique(int namespace, char * name)
 {
@@ -564,22 +598,11 @@ void session(id you)
 
     #pragma region getting user/group by id
 
-    box * whatever = get_item_by_id(you);
+    user * user_you = get_user_by_id(you);
+    group * group_you = get_group_by_id(you);
 
-    user * user_you = NULL;
-    group * group_you = NULL;
-
-    if (whatever->u != NULL)
-        user_you = whatever->u;
-    else if (whatever->g != NULL)
-    {
-        user_you = whatever->g->image;
-        group_you = whatever->g;
-    }  
-    else
+    if (user_you == NULL)
         return;
-
-    free(whatever);
 
     #pragma endregion
 
@@ -609,14 +632,12 @@ void session(id you)
                 int i = 0;
                 for (; i < group_you->num_of_members; i++)
                 {
-                    box * member = get_item_by_id(group_you->members[i]);
-                    if (member->u != NULL)
+                    user * member = get_user_by_id(group_you->members[i]);
+                    if (member != NULL)
                     {
-                        out_str_wo_nl(member->u->name);
+                        out_str_wo_nl(member->name);
                         printf(", ");
                     }
-
-                    free(member);
                 }
                 printf("\b\b.\n\n");
             }
@@ -733,18 +754,11 @@ void session(id you)
             {
                 printf(" %d\t\t ", i + 1);
                 
-                box * whatever = get_item_by_id(group_you->members[i]);
+                user * cur_member = get_user_by_id(group_you->members[i]);
 
-                user * cur_member;
-
-                if (whatever->u != NULL)
-                    cur_member = whatever->u;
-                else
-                    return;
-
-                free(whatever);
-
-                out_str_wo_nl(cur_member->name);
+                if (cur_member != NULL)
+                    out_str_wo_nl(cur_member->name);
+                    
                 printf("\n");
             }
 
@@ -790,18 +804,9 @@ void add_money(id you)
 
     #pragma region getting you by id
 
-    box * whatever = get_item_by_id(you);
-
-    user * user_you;
-
-    if (whatever->u != NULL)
-        user_you = whatever->u;
-    else if (whatever->g != NULL)
-        user_you = whatever->g->image;
-    else
+    user * user_you = get_user_by_id(you);
+    if (user_you == NULL)
         return;
-
-    free(whatever);
 
     #pragma endregion
 
@@ -827,6 +832,7 @@ void add_money(id you)
     return;
 
     #pragma endregion
+
 }
 
 void release_a_record(id you)
@@ -835,22 +841,10 @@ void release_a_record(id you)
 
     #pragma region getting you by id
 
-    box * whatever = get_item_by_id(you);
-
-    user * user_you = NULL;
-    group * group_you = NULL;
-
-    if (whatever->u != NULL)
-        user_you = whatever->u;
-    else if (whatever->g != NULL)
-    {
-        user_you = whatever->g->image;
-        group_you = whatever->g;
-    }
-    else
+    user * user_you = get_user_by_id(you);
+    group * group_you = get_group_by_id(you);
+    if (user_you == NULL)
         return;
-
-    free(whatever);
 
     #pragma endregion
 
@@ -858,14 +852,13 @@ void release_a_record(id you)
 
     #pragma region setting type
 
-    printf("Is the record...\n");
-    printf("Composition(1)\nSingle(2)\nLP(3)\nEP(4)\nMixtape(5)? ");
+    printf("Is the record...\n"
+           "Composition(1)\tSingle(2)\tLP(3)\tEP(4)\tMixtape(5)? ");
 
     do
     {
         new_one->type = getch() - '1';
-    } while (new_one->type != 0 && new_one->type != 1 && 
-        new_one->type != 2 && new_one->type != 3 && new_one->type != 4);
+    } while (new_one->type < 0 || new_one->type > 4);
 
     #pragma endregion
 
@@ -893,7 +886,7 @@ void release_a_record(id you)
 
     #pragma endregion
 
-    #pragma region setting just you as the author (fine for now) and adding the release to yours
+    #pragma region setting user-you / group + members as author(s) and adding the release to yours
 
     {
 
@@ -905,18 +898,14 @@ void release_a_record(id you)
     for (; i < new_one->num_of_authors; i++)
         new_one->authors[i] = group_you->members[i - 1];
     
-    if (user_you != NULL)
-    {
-        user_you->purchased_releases = (id*)realloc(user_you->purchased_releases, 
-            user_you->num_of_purchased_releases + 1);
+    user_you->purchased_releases = (id*)realloc(user_you->purchased_releases, 
+        user_you->num_of_purchased_releases + 1);
+    if (user_you->purchased_releases == NULL)
+        report_merror();
 
-        if (user_you->purchased_releases == NULL)
-            report_merror();
-
-        user_you->purchased_releases[user_you->num_of_purchased_releases++] = 
-            new_one->release_id;
-    }  
-
+    user_you->purchased_releases[user_you->num_of_purchased_releases++] = 
+        new_one->release_id;
+     
     }
 
     #pragma endregion
@@ -935,14 +924,15 @@ void release_a_record(id you)
 
     {
 
+    /* setting num of songs */
     do 
     {
         printf("\nEnter the number of songs on the record: ");
         new_one->num_of_songs = get_int();         
     } while (new_one->num_of_songs <= 0 || new_one->num_of_songs > SONGS_ON_THE_RECORD_UPPER_LIMIT);
-
     new_one->songs = (song*)malloc(sizeof(song) * new_one->num_of_songs);
 
+    /* setting songs */
     int i = 0;
     for (; i < new_one->num_of_songs; i++)
     {
@@ -966,18 +956,16 @@ void release_a_record(id you)
 
     #pragma region releasing
 
-    user_you->releases = (id*)realloc(user_you->releases, sizeof(id) * (user_you->num_of_releases + 1));
-    
+    /* adding new release to yours as an id */
+    user_you->releases = (id*)realloc(user_you->releases, sizeof(id) * (user_you->num_of_releases + 1));   
     if (user_you->releases == NULL)
         report_merror();
-
     user_you->releases[user_you->num_of_releases++] = new_one->release_id; 
 
+    /* adding new release to all of them */
     releases = (release**)realloc(releases, sizeof(release*) * (num_of_releases + 1));
-
     if (releases == NULL)
         report_merror();
-
     releases[num_of_releases++] = new_one;
 
     #pragma endregion
@@ -990,28 +978,16 @@ void publish_an_article(id you)
 
     #pragma region getting you by id
 
-    box * whatever = get_item_by_id(you);
-
-    user * user_you = NULL;
-    group * group_you = NULL;
-
-    if (whatever->u != NULL)
-        user_you = whatever->u;
-    else if (whatever->g != NULL)
-    {
-        user_you = whatever->g->image;
-        group_you = whatever->g;    
-    }
-    else
+    user * user_you = get_user_by_id(you);
+    group * group_you = get_group_by_id(you);
+    if (user_you == NULL)
         return;
-
-    free(whatever);
 
     #pragma endregion
 
     article * new_one = new_article();
 
-    #pragma region setting name
+    #pragma region setting the title
 
     printf("\nEnter the title of the article: ");
 
@@ -1039,14 +1015,15 @@ void publish_an_article(id you)
 
     #pragma region setting text the easy way
 
+    /* setting num of lines */
     int lines_num;
     do 
     {
         printf("Enter the number of lines in the article: ");
         lines_num = get_int();
-
     } while (lines_num < 0 || lines_num > MAX_NUM_OF_ARTICLE_LINES);
 
+    /* writing text */
     if (lines_num == 0)
     {
         new_one->text->num_of_lines = 0;
@@ -1060,7 +1037,7 @@ void publish_an_article(id you)
 
     #pragma endregion
 
-    #pragma region setting just you as the author (fine for now)
+    #pragma region setting the author(s) the same way as with the release
 
     new_one->num_of_authors = 1 + (group_you != NULL ? group_you->num_of_members : 0); 
     new_one->authors = (id*)malloc(sizeof(id) * new_one->num_of_authors);
@@ -1097,18 +1074,16 @@ void publish_an_article(id you)
 
     #pragma region publishing
 
-    user_you->articles = (id*)realloc(user_you->articles, sizeof(id) * (user_you->num_of_articles + 1));
-    
+    /* adding to yours as an id */
+    user_you->articles = (id*)realloc(user_you->articles, sizeof(id) * (user_you->num_of_articles + 1));  
     if (user_you->articles == NULL)
         report_merror();
-
     user_you->articles[user_you->num_of_articles++] = new_one->article_id; 
 
+    /* ading to all */
     articles = (article**)realloc(articles, sizeof(article*) * (num_of_articles + 1));
-
     if (articles == NULL)
         report_merror();
-
     articles[num_of_articles++] = new_one;
 
     #pragma endregion
@@ -1350,10 +1325,8 @@ date * set_date()
 
     free(str);
 
-    if (y < 1900 || y > 2020 || m <= 0 || m > 12 || d <= 0)
-        return NULL;
-
-    if (d > months[m - 1] && !(d == 29 && m == 2 && y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)))
+    if (y <= 1900 || y > 2100 || m <= 0 || m > 12 || d <= 0 ||
+        (d > months[m - 1] && !(m == 2 && d == 29 && is_a_leap_year(y))))
         return NULL;
 
     date * new_date = (date*)malloc(sizeof(date));
@@ -1371,7 +1344,7 @@ song set_song()
 
     #pragma region setting name, cover & music
 
-    printf("\nSet name of the song: ");
+    printf("Set name of the song: ");
 
     new_one.name = get_string(stdin);
     if (length_of(new_one.name) == 2)
@@ -1395,13 +1368,14 @@ song set_song()
     int lines_num;
     do 
     {
-        printf("Enter the number of lines in lyrics: ");
+        printf("\nEnter the number of lines in lyrics: ");
         lines_num = get_int();
 
     } while (lines_num < 0 || lines_num > MAX_NUM_OF_LYR_LINES);
 
     if (lines_num == 0)
     {
+        new_one.lyrics = (text*)malloc(sizeof(text));
         new_one.lyrics->num_of_lines = 0;
         new_one.lyrics->lines = NULL;
     }

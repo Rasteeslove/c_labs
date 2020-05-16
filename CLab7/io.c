@@ -39,7 +39,7 @@ void write_song_to_file(FILE * file, song one);
 
 int yes_function();
 
-/* input of any allocatable line */
+/* gets any allocatable line from file or stdin */
 char * get_string(FILE * file_or_con)
 {
     char * str;
@@ -86,7 +86,10 @@ void write_string_to_file(char * str, FILE * file)
         report_werror();
 }
 
-/* input of any allocatable text */
+/* gets any allocatable text from file or stdin.
+   stops reading:
+   1) if max_line_num == 0 and condition for reading returns 1 on call
+   2) if max_line_num > 0 then after reading max_line_num lines */
 text * get_text(FILE * file_or_con, int (*condition_for_reading)(), int max_line_num) 
 {      
     char ** lines;
@@ -126,6 +129,7 @@ text * get_text(FILE * file_or_con, int (*condition_for_reading)(), int max_line
     return output;
 }
 
+/* if both params !=null : writes num of lines and lines to file */
 void move_text_to_file(FILE * file, text * text)
 {
 
@@ -138,27 +142,17 @@ void move_text_to_file(FILE * file, text * text)
 
     #pragma region writing number of lines to file
 
-    int num;
-    if ((num = fprintf(file, "%d ", text->num_of_lines)) < 0) 
-    {
-        printf("\nError writing to file\n");
-        exit(EXIT_FAILURE);    
-    }
+    if (fprintf(file, "%d ", text->num_of_lines) == EOF)
+        report_werror();
 
     #pragma endregion
 
     #pragma region writing lines to file
 
     int i = 0;
-    for (; i < text->num_of_lines; i++)
-    {
-        
-        if ((num = fputs(text->lines[i], file)) == EOF) 
-        {
-            printf("\nError writing to file\n");
-            exit(EXIT_FAILURE);    
-        }
-    }
+    for (; i < text->num_of_lines; i++)   
+        if (fputs(text->lines[i], file) == EOF) 
+            report_werror();
 
     #pragma endregion
 
@@ -366,8 +360,8 @@ user * get_user_from_file(FILE * file)
 
     new_one->purchased_articles = get_int_arr(file, new_one->num_of_purchased_articles);
 
-    new_one->revenue = get_money(file);
-    new_one->full_account = get_money(file);
+    if (fscanf(file, "%d %d ", &new_one->revenue, &new_one->full_account) == EOF)
+        report_uerror();
 
     return new_one;
 }
@@ -399,9 +393,8 @@ void write_user_to_file(user * one, FILE * file)
 
     write_int_arr_to_file(file, one->purchased_articles, one->num_of_purchased_articles);
 
-    write_money_to_file(file, one->revenue);
-
-    write_money_to_file(file, one->full_account);
+    if (fprintf(file, "%d %d ", one->revenue, one->full_account) == EOF)
+        report_werror();
 }
 
 group * get_group_from_file(FILE * file)
@@ -452,7 +445,8 @@ release * get_release_from_file(FILE * file)
     for (i = 0; i < new_one->num_of_songs; i++)
         new_one->songs[i] = get_song(file);
 
-    new_one->price = get_money(file);
+    if (fscanf(file, "%d ", &new_one->price) == EOF)
+        report_uerror();
 
     return new_one;
 }
@@ -478,7 +472,8 @@ void write_release_to_file(release * one, FILE * file)
     for (i = 0; i < one->num_of_songs; i++)
         write_song_to_file(file, one->songs[i]);
 
-    write_money_to_file(file, one->price);
+    if (fprintf(file, "%d ", one->price) == EOF)
+        report_werror();
 }
 
 article * get_article_from_file(FILE * file)
@@ -490,20 +485,22 @@ article * get_article_from_file(FILE * file)
 
     new_one->published = get_date(file);
 
-    new_one->title = get_string(file);
-
-    int tmp;
-    if (fscanf(file, "%d ", &tmp) == EOF)
-        report_uerror();
+    new_one->title = get_string(file); 
 
     if (fscanf(file, "%d ", &new_one->num_of_authors) == EOF)
         report_uerror();
 
     new_one->authors = get_int_arr(file, new_one->num_of_authors);
 
-    new_one->text = get_text(file, yes_function, tmp);
+    int tmp;
+    if (fscanf(file, "%d ", &tmp) == EOF)
+        report_uerror();
 
-    new_one->price = get_money(file);
+    if (tmp != 0)
+        new_one->text = get_text(file, yes_function, tmp);
+
+    if (fscanf(file, "%d ", &new_one->price) == EOF)
+        report_uerror();
 
     return new_one;
 }
@@ -547,16 +544,6 @@ void write_int_arr_to_file(FILE * file, int * arr, int size)
             report_werror();
 }
 
-money get_money(FILE * file)
-{
-    money new_money;
-
-    if (fscanf(file, "%d ", &new_money) == EOF)
-        report_uerror();
-
-    return new_money;
-}
-
 void write_money_to_file(FILE * file, money one)
 {
     if (fprintf(file, "%d ", one) == EOF)
@@ -589,7 +576,15 @@ song get_song(FILE * file)
     if (fscanf(file, "%d %d %d ", &new_one.cover, &new_one.music, &tmp) == EOF)
         report_uerror();
 
-    new_one.lyrics = get_text(file, yes_function, tmp);
+    if (tmp != 0)
+        new_one.lyrics = get_text(file, yes_function, tmp);
+    else
+    {
+        new_one.lyrics = (text*)malloc(sizeof(text));
+
+        new_one.lyrics->lines = NULL;
+        new_one.lyrics->num_of_lines = 0;
+    }
 
     return new_one;
 }

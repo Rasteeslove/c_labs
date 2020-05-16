@@ -64,19 +64,6 @@ group * new_group(char * name, int num_of_members, id * members)
     return new_group;
 }
 
-/*
-group * new_group(char * name)
-{
-    group * new_group = (group*)malloc(sizeof(group));
-
-    new_group->image = new_user(name);
-
-    new_group->num_of_members = 0;
-    new_group->members = NULL;
-     
-    return new_group;
-}*/
-
 release * new_release()
 {
     release * new_one = (release*)malloc(sizeof(release));
@@ -133,7 +120,8 @@ void delete_text(text * one)
     for (; i < one->num_of_lines; i++)
         free(one->lines[i]);
 
-    free(one->lines);
+    if (one->lines != NULL)
+        free(one->lines);
     free(one);
 }
 
